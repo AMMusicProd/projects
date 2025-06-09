@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ear Training Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000;
+      color: #fff;
+      text-align: center;
+      padding: 40px 20px;
+      margin: 0;
+    }
+
+    h1 {
+      color: #907BFF;
+      margin-bottom: 10px;
+    }
+
+    #levelStatus,
+    #scoreStatus,
+    #livesStatus,
+    #gameStatus,
+    .result,
+    .volume-control label {
+      color: #fff;
+    }
+
+    #gameStatus {
+  font-size: 20px;
+  margin: 20px 0;
+  font-weight: 600;
+  color: #907BFF;
+    }
+
+    #goalMessage {
+      font-weight: bold;
+      color: #fff;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 20px;
+      margin: 10px 8px;
+      font-size: 16px;
+      background-color: #111;
+      color: #fff;
+      border: 2px solid #444;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 120px;
+      flex: 1 1 auto;
+      max-width: 150px;
+      user-select: none;
+    }
+
+    button:hover {
+      background-color: #222;
+      border-color: #666;
+    }
+
+    #playButton {
+      font-weight: 600;
+      border-color: #907BFF;
+      max-width: 220px;
+    }
+
+    #playButton:hover {
+      background-color: #1a1a1a;
+    }
+
+    .volume-control {
+      margin-bottom: 20px;
+      font-size: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #volumeSlider {
+      -webkit-appearance: none;
+      width: 200px;
+      height: 6px;
+      background: #444;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    /* Slider thumb styling */
+    #volumeSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #907BFF;
+      cursor: pointer;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      margin-top: -6px;
+      box-shadow: 0 0 6px rgba(144, 123, 255, 0.7);
+      transition: background 0.3s ease;
+    }
+    #volumeSlider::-webkit-slider-thumb:hover {
+      background: #a593ff;
+    }
+    #volumeSlider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: #907BFF;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(144, 123, 255, 0.7);
+      transition: background 0.3s ease;
+    }
+    #volumeSlider::-moz-range-thumb:hover {
+      background: #a593ff;
+    }
+    #volumeSlider::-moz-range-track {
+      background: #444;
+      height: 6px;
+      border-radius: 3px;
+    }
+
+    /* Choices container styles */
+    #choices {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 650px;
+      margin: 0 auto 20px auto;
+      gap: 12px;
+    }
+
+    /* Special container for level 3 split rows */
+    #choices.split-rows {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      grid-gap: 12px;
+      max-width: 600px;
+      margin: 0 auto 20px auto;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      min-height: 24px;
+    }
+
+    /* Responsive text and button size */
+    @media (max-width: 480px) {
+      body {
+        padding: 20px 12px;
+      }
+
+      button {
+        min-width: 100px;
+        max-width: 120px;
+        font-size: 14px;
+        margin: 8px 5px;
+        padding: 10px 16px;
+      }
+
+      #playButton {
+        max-width: 180px;
+      }
+
+      #volumeSlider {
+        width: 150px;
+      }
+
+      .volume-control {
+        font-size: 16px;
+        flex-direction: column;
+        gap: 6px;
+      }
+      
+
+
+    }
+  </style>
+</head>
+<body>
+  <h1>Train Your Ears - Guess the Frequency!</h1>
+  <br>
+
+  <div class="status" id="levelStatus">Level: 1 Studio Assistant</div>
+  <br>
+  <p id="goalMessage">Get 10 correct answers to proceed to the next level.</p>
+
+  <div class="volume-control">
+    <label for="volumeSlider">Volume:</label>
+    <input type="range" id="volumeSlider" min="0" max="100" value="50" />
+  </div>
+
+  <button id="playButton" onclick="playTone()">Play Tone</button>
+
+  <div id="choices"></div>
+
+  <div class="result" id="resultText"></div>
+  <div class="status" id="gameStatus"></div>
+  <div class="status" id="scoreStatus">Correct answers: 0 / 10</div>
+  <div class="status" id="livesStatus">Lives left: 10</div>
+
+  <script>
+    const levels = [
+      [100, 500, 1000], // Level 1
+      [100, 500, 1000, 2500, 5000, 10000, 15000], // Level 2
+      [100, 250, 500, 1000, 2000, 4000, 8000, 10000, 12000, 15000] // Level 3
+    ];
+
+    let currentLevel = 0;
+    let correctFrequency = 0;
+    let correctAnswers = 0;
+    let wrongGuesses = 0;
+    const correctGoal = 10;
+    const maxLives = 10;
+    let tonePlayed = false;
+
+    const playButton = document.getElementById("playButton");
+    const choicesContainer = document.getElementById("choices");
+
+    function getVolume() {
+      return document.getElementById("volumeSlider").value / 100;
+    }
+
+    const levelTitles = [
+  "Level 1: Studio Assistant:",
+  "Level 2: Mix Engineer",
+  "Level 3: Mastering Legend"
+    ];
+
+    function playTone() {
+      if (tonePlayed) return;
+
+      const freqList = levels[currentLevel];
+      correctFrequency = freqList[Math.floor(Math.random() * freqList.length)];
+
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = getVolume();
+
+      const oscillator = ctx.createOscillator();
+      oscillator.type = "sine";
+      oscillator.frequency.value = correctFrequency;
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 1);
+
+      showChoices(freqList);
+      document.getElementById("resultText").textContent = "";
+      tonePlayed = true;
+      playButton.disabled = true;
+    }
+
+    function showChoices(frequencies) {
+      choicesContainer.innerHTML = "";
+
+      // Special layout for level 3: split into two rows
+      if (currentLevel === 2) {
+        choicesContainer.classList.add("split-rows");
+      } else {
+        choicesContainer.classList.remove("split-rows");
+      }
+
+      frequencies.forEach(freq => {
+        const btn = document.createElement("button");
+        btn.textContent = `${freq} Hz`;
+        btn.onclick = () => checkAnswer(freq);
+        choicesContainer.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selected) {
+      const result = document.getElementById("resultText");
+      const status = document.getElementById("gameStatus");
+
+      if (selected === correctFrequency) {
+        correctAnswers++;
+        result.textContent = "Correct!";
+        result.style.color = "#4caf50";
+      } else {
+        wrongGuesses++;
+        result.textContent = `Incorrect. It was ${correctFrequency} Hz.`;
+        result.style.color = "#f44336";
+      }
+
+      tonePlayed = false;
+      playButton.disabled = false;
+      updateStatusDisplay();
+
+      if (correctAnswers >= correctGoal) {
+        status.textContent = `Level ${currentLevel + 1} complete. Moving to next level.`;
+        currentLevel++;
+        if (currentLevel >= levels.length) {
+          status.textContent = "You've completed all levels. Great job! Remember to keep practising!";
+          disableButtons();
+          return;
+        }
+        resetLevel();
+      } else if (wrongGuesses >= maxLives) {
+        status.textContent = `Too many incorrect guesses. Restarting Level ${currentLevel + 1}.`;
+        resetLevel();
+      }
+    }
+
+    function updateStatusDisplay() {
+      document.getElementById("scoreStatus").textContent = `Correct answers: ${correctAnswers} / ${correctGoal}`;
+      document.getElementById("livesStatus").textContent = `Lives left: ${maxLives - wrongGuesses}`;
+    }
+
+    function resetLevel() {
+      correctAnswers = 0;
+      wrongGuesses = 0;
+      tonePlayed = false;
+      playButton.disabled = false;
+      document.getElementById("levelStatus").textContent = levelTitles[currentLevel] || `Level: ${currentLevel + 1}`;
+      document.getElementById("goalMessage").textContent = `Get 10 correct answers to proceed to the next level.`;
+      updateStatusDisplay();
+    }
+
+    function disableButtons() {
+      choicesContainer.innerHTML = "";
+      playButton.disabled = true;
+      document.getElementById("livesStatus").textContent = "";
+    }
+  </script>
+</body>
+</html>
