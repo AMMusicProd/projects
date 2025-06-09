@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ear Training Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background-color: #f0f0f0;
+    }
+    button {
+      padding: 12px 20px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Guess the Frequency</h1>
+  <button onclick="playTone()">🔊 Play Tone</button>
+  <div id="choices"></div>
+  <div class="result" id="resultText"></div>
+
+  <script>
+    const frequencies = [440, 500, 550, 600];
+    let correctFrequency = 440;
+
+    function playTone() {
+      // Randomly pick frequency
+      correctFrequency = frequencies[Math.floor(Math.random() * frequencies.length)];
+
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = ctx.createOscillator();
+      oscillator.type = "sine";
+      oscillator.frequency.value = correctFrequency;
+      oscillator.connect(ctx.destination);
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 1);
+      
+      showChoices();
+      document.getElementById("resultText").textContent = "";
+    }
+
+    function showChoices() {
+      const container = document.getElementById("choices");
+      container.innerHTML = "";
+      frequencies.forEach(freq => {
+        const btn = document.createElement("button");
+        btn.textContent = `${freq} Hz`;
+        btn.onclick = () => checkAnswer(freq);
+        container.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selected) {
+      const result = document.getElementById("resultText");
+      if (selected === correctFrequency) {
+        result.textContent = "✅ Correct!";
+        result.style.color = "green";
+      } else {
+        result.textContent = `❌ Incorrect! It was ${correctFrequency} Hz.`;
+        result.style.color = "red";
+      }
+    }
+  </script>
+
+</body>
+</html>
